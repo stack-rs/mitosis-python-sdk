@@ -1,5 +1,6 @@
 [project]
 name = "pynetmito"
+version = "0.0.1"
 description = "Python Client SDK for mitosis"
 readme = "README.md"
 authors = [{ name = "BobAnkh", email = "bobankhshen@gmail.com" }]
@@ -36,7 +37,6 @@ classifiers = [
   "Topic :: System :: Distributed Computing",
   "Topic :: Utilities",
 ]
-dynamic = ["version"]
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]
@@ -47,16 +47,8 @@ Documentation = "https://docs.stack.rs/mitosis/"
 Homepage = "https://github.com/stack-rs/mitosis"
 Source = "https://github.com/stack-rs/mitosis"
 
-[tool.hatch.version]
-source = "uv-dynamic-versioning"
-
 [tool.hatch.build.targets.sdist]
 include = ["/httpx", "/README.md"]
-
-[tool.uv-dynamic-versioning]
-vcs = "git"
-style = "pep440"
-bump = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pynetmito"]
@@ -133,7 +125,7 @@ split_commits = false
 # regex for preprocessing the commit messages
 commit_preprocessors = [
   # Replace issue numbers
-  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/issues/${2}))"},
+  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/issues/${2}))" },
   # Check spelling of the commit with https://github.com/crate-ci/typos
   # If the spelling is incorrect, it will be automatically fixed.
   #{ pattern = '.*', replace_command = 'typos --write-changes -' },
