@@ -2,7 +2,7 @@ name: Publishing
 
 on:
   release:
-    types: [published]
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -14,8 +14,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
+        # with:
+        #   enable-cache: true
 
       - name: Set up Python 3.12
         run: uv python install 3.12
