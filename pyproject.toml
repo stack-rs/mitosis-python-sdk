@@ -1,0 +1,62 @@
+[project]
+name = "pynetmito"
+description = "Python Client SDK for mitosis"
+readme = "README.md"
+authors = [{ name = "BobAnkh", email = "bobankhshen@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.28.1", "platformdirs>=4.4.0", "pydantic>=2.11.7"]
+license = { text = "Apache-2.0" }
+keywords = [
+  "SDK",
+  "Client",
+  "API",
+  "Async",
+  "HTTP",
+  "REST",
+  "mitosis",
+  "Distributed",
+  "evaluation",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Distributed Computing",
+  "Topic :: Utilities",
+]
+dynamic = ["version"]
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+[project.urls]
+Documentation = "https://docs.stack.rs/mitosis/"
+Homepage = "https://github.com/stack-rs/mitosis"
+Source = "https://github.com/stack-rs/mitosis"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.targets.sdist]
+include = ["/httpx", "/README.md"]
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pynetmito"]
