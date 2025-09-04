@@ -1,7 +1,10 @@
+from datetime import datetime
 import hashlib
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional, Set, Union
+from dateutil import parser
+import re
 
 from pydantic import (
     UUID4,
@@ -16,6 +19,46 @@ from pydantic import (
 )
 
 from pynetmito import BaseAPIModel
+
+
+TIME_PATTERN = re.compile(r"([+-]\d{2}):(\d{2}):(\d{2})$")
+
+
+def parse_rust_time_dateutil(time_str: str):
+    processed = TIME_PATTERN.sub(r"\1\2", time_str)
+
+    try:
+        return parser.parse(processed)
+    except parser.ParserError as e:
+        raise ValueError(f"Fail to parse: {time_str}") from e
+
+
+def _format_timezone_offset(offset_seconds: int) -> str:
+    abs_offset = abs(offset_seconds)
+    hours = abs_offset // 3600
+    minutes = (abs_offset % 3600) // 60
+    seconds = abs_offset % 60
+
+    sign = "+" if offset_seconds >= 0 else "-"
+    return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+def serialize_to_rust_time(dt: datetime) -> str:
+    if dt.tzinfo is None:
+        raise ValueError("Invalid datetime object: tzinfo is None")
+
+    date_part = dt.strftime("%Y-%m-%d")
+    time_part = dt.strftime("%H:%M:%S")
+
+    microseconds = f"{dt.microsecond:06d}"
+
+    utc_offset = dt.utcoffset()
+    if utc_offset is None:
+        raise ValueError("Invalid datetime object: utcoffset is None")
+    offset_seconds = int(utc_offset.total_seconds())
+    timezone_str = _format_timezone_offset(offset_seconds)
+
+    return f"{date_part} {time_part}.{microseconds} {timezone_str}"
 
 
 class UserLoginArgs(BaseAPIModel):
@@ -242,13 +285,31 @@ class TaskQueryInfo(BaseAPIModel):
     task_id: int
     tags: list[str]
     labels: list[str]
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     state: TaskState
     timeout: int
     priority: int
     spec: dict
     result: Optional[dict] = Field(default=None)
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str, _info):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str, _info):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime, _info):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime, _info):
+        return serialize_to_rust_time(updated_at)
 
 
 class ParsedTaskQueryInfo(BaseAPIModel):
@@ -263,14 +324,31 @@ class ParsedTaskQueryInfo(BaseAPIModel):
     task_id: int
     tags: list[str]
     labels: list[str]
-    # TODO: parse
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     state: TaskState
     timeout: int
     priority: int
     spec: TaskSpec
     result: Optional[TaskResultSpec] = Field(default=None)
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str, _info):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str, _info):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime, _info):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime, _info):
+        return serialize_to_rust_time(updated_at)
 
 
 class TasksQueryResp(BaseAPIModel):
@@ -287,9 +365,26 @@ class ArtifactQueryResp(BaseAPIModel):
     )
     content_type: ArtifactContentType
     size: int
-    # TODO: parse
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str, _info):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str, _info):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime, _info):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime, _info):
+        return serialize_to_rust_time(updated_at)
 
 
 class TaskQueryResp(BaseAPIModel):
@@ -356,6 +451,23 @@ class UploadAttachmentResp(BaseAPIModel):
 class AttachmentMetadata(BaseAPIModel):
     content_type: AttachmentContentType
     size: int
-    # TODO: parse
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str, _info):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str, _info):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime, _info):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime, _info):
+        return serialize_to_rust_time(updated_at)
