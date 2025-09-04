@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 from enum import Enum
 from pathlib import Path
@@ -59,6 +59,81 @@ def serialize_to_rust_time(dt: datetime) -> str:
     timezone_str = _format_timezone_offset(offset_seconds)
 
     return f"{date_part} {time_part}.{microseconds} {timezone_str}"
+
+
+def parse_human_timespan(value: Union[str, int, float, timedelta]) -> timedelta:
+    if isinstance(value, timedelta):
+        return value
+
+    if isinstance(value, (int, float)):
+        return timedelta(seconds=value)
+
+    if isinstance(value, str):
+        value = value.strip().lower()
+
+        units = {
+            "s": 1,
+            "sec": 1,
+            "second": 1,
+            "seconds": 1,
+            "m": 60,
+            "min": 60,
+            "minute": 60,
+            "minutes": 60,
+            "h": 3600,
+            "hr": 3600,
+            "hour": 3600,
+            "hours": 3600,
+            "d": 86400,
+            "day": 86400,
+            "days": 86400,
+        }
+
+        pattern = r"(\d+(?:\.\d+)?)\s*([a-z]+)"
+        matches = re.findall(pattern, value)
+
+        if matches:
+            total_seconds = 0
+            for number, unit in matches:
+                if unit in units:
+                    total_seconds += float(number) * units[unit]
+                else:
+                    raise ValueError(f"Unknown unit: '{unit}'")
+            return timedelta(seconds=total_seconds)
+
+        try:
+            return timedelta(seconds=float(value))
+        except ValueError:
+            raise ValueError(f"Fail to parse: '{value}'")
+
+
+def serialize_to_human_timespan(td: timedelta) -> str:
+    total_seconds = int(td.total_seconds())
+
+    if total_seconds == 0:
+        return "0s"
+
+    if total_seconds < 0:
+        return "-" + serialize_to_human_timespan(timedelta(seconds=-total_seconds))
+
+    days = total_seconds // 86400
+    remaining = total_seconds % 86400
+    hours = remaining // 3600
+    remaining = remaining % 3600
+    minutes = remaining // 60
+    seconds = remaining % 60
+
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    if seconds > 0:
+        parts.append(f"{seconds}s")
+
+    return "".join(parts)
 
 
 class UserLoginArgs(BaseAPIModel):
@@ -396,8 +471,7 @@ class SubmitTaskReq(BaseAPIModel):
     group_name: str
     tags: Set[str] = Field(default=set())
     labels: Set[str] = Field(default=set())
-    # TODO: change to human readable format
-    timeout: str = Field(default="10min")
+    timeout: timedelta = Field(default=timedelta(minutes=10))
     priority: int = Field(default=0)
     task_spec: TaskSpec
 
@@ -418,6 +492,15 @@ class SubmitTaskReq(BaseAPIModel):
     @classmethod
     def deserialize_labels(cls, labels: list[str], _info):
         return set(labels)
+
+    @field_serializer("timeout")
+    def serialize_timeout(self, timeout: timedelta, _info):
+        return serialize_to_human_timespan(timeout)
+
+    @field_validator("timeout", mode="before")
+    @classmethod
+    def deserialize_timeout(cls, timeout: str, _info):
+        return parse_human_timespan(timeout)
 
 
 class SubmitTaskResp(BaseAPIModel):
