@@ -376,6 +376,42 @@ class TasksQueryReq(BaseAPIModel):
     offset: Optional[NonNegativeInt] = Field(default=None)
     count: bool = Field(default=False)
 
+    @field_serializer("creator_usernames")
+    def serialize_creator_usernames(self, creator_usernames: Optional[Set[str]]):
+        return list(creator_usernames) if creator_usernames else None
+
+    @field_validator("creator_usernames", mode="before")
+    @classmethod
+    def deserialize_creator_usernames(cls, creator_usernames: Optional[list[str]]):
+        return set(creator_usernames) if creator_usernames else None
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Optional[Set[str]]):
+        return list(labels) if labels else None
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: Optional[list[str]]):
+        return set(labels) if labels else None
+
+    @field_serializer("states")
+    def serialize_states(self, states: Optional[Set[TaskState]]):
+        return list(states) if states else None
+
+    @field_validator("states", mode="before")
+    @classmethod
+    def deserialize_states(cls, states: Optional[list[TaskState]]):
+        return set(states) if states else None
+
 
 class TaskQueryInfo(BaseAPIModel):
     model_config = ConfigDict(
