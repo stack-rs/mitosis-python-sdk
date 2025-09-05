@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1](https://github.com/stack-rs/mitosis/compare/v0.1.0..v0.1.1) - 2025-09-05
+
+### Bug Fixes
+
+- *(schema)* Resolve TasksQueryReq (de)serde issue - ([1c7505b](https://github.com/stack-rs/mitosis-python-sdk/commit/1c7505be60dce85fdb8b4a3319c27c2f5e83f180))
+
 ## [0.1.0](https://github.com/stack-rs/mitosis/compare/v0.0.3..v0.1.0) - 2025-09-05
 
 ### Features
