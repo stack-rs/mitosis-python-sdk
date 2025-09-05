@@ -204,6 +204,35 @@ class TaskExecState(str, Enum):
     UNKNOWN = "Unknown"
 
 
+class UserState(str, Enum):
+    ACTIVE = "Active"
+    LOCKED = "Locked"
+    DELETED = "Deleted"
+
+
+class GroupState(str, Enum):
+    ACTIVE = "Active"
+    LOCKED = "Locked"
+    DELETED = "Deleted"
+
+
+class WorkerState(str, Enum):
+    NORMAL = "Normal"
+    GRACEFUL_SHUTDOWN = "GracefulShutdown"
+
+
+class UserGroupRole(str, Enum):
+    READ = "Read"
+    WRITE = "Write"
+    ADMIN = "Admin"
+
+
+class GroupWorkerRole(str, Enum):
+    READ = "Read"
+    WRITE = "Write"
+    ADMIN = "Admin"
+
+
 class TaskResultMessage(str, Enum):
     FETCH_RESOURCE_TIMEOUT = "FetchResourceTimeout"
     EXEC_TIMEOUT = "ExecTimeout"
@@ -593,7 +622,7 @@ class WorkerQueryInfo(BaseAPIModel):
     tags: list[str]
     created_at: datetime
     updated_at: datetime
-    state: str  # TODO: WorkerState enum
+    state: WorkerState
     last_heartbeat: datetime
     assigned_task_id: Optional[UUID4] = Field(default=None)
 
@@ -627,23 +656,23 @@ class WorkerQueryInfo(BaseAPIModel):
 
 class WorkerQueryResp(BaseAPIModel):
     info: WorkerQueryInfo
-    groups: Dict[str, str]  # TODO: GroupWorkerRole
+    groups: Dict[str, GroupWorkerRole]
 
 
 class WorkersQueryReq(BaseAPIModel):
     group_name: Optional[str] = Field(default=None)
-    role: Optional[Set[str]] = Field(default=None)  # TODO: GroupWorkerRole
+    role: Optional[Set[GroupWorkerRole]] = Field(default=None)
     tags: Optional[Set[str]] = Field(default=None)
     creator_username: Optional[str] = Field(default=None)
     count: bool = Field(default=False)
 
     @field_serializer("role")
-    def serialize_role(self, role: Optional[Set[str]]):
+    def serialize_role(self, role: Optional[Set[GroupWorkerRole]]):
         return list(role) if role else None
 
     @field_validator("role", mode="before")
     @classmethod
-    def deserialize_role(cls, role: Optional[list[str]]):
+    def deserialize_role(cls, role: Optional[list[GroupWorkerRole]]):
         return set(role) if role else None
 
     @field_serializer("tags")
@@ -667,14 +696,12 @@ class GroupQueryInfo(BaseAPIModel):
     creator_username: str
     created_at: datetime
     updated_at: datetime
-    state: str  # TODO: GroupState
+    state: GroupState
     task_count: int
     storage_quota: int
     storage_used: int
     worker_count: int
-    users_in_group: Optional[Dict[str, str]] = Field(
-        default=None
-    )  # TODO: UserGroupRole
+    users_in_group: Optional[Dict[str, UserGroupRole]] = Field(default=None)
 
     @field_validator("created_at", mode="before")
     @classmethod
@@ -696,7 +723,7 @@ class GroupQueryInfo(BaseAPIModel):
 
 
 class GroupsQueryResp(BaseAPIModel):
-    groups: Dict[str, str]  # TODO: UserGroupRole
+    groups: Dict[str, UserGroupRole]
 
 
 class AttachmentQueryInfo(BaseAPIModel):
@@ -790,7 +817,7 @@ class ReplaceWorkerTagsReq(BaseAPIModel):
 
 
 class UpdateGroupWorkerRoleReq(BaseAPIModel):
-    relations: Dict[str, str]  # TODO: GroupWorkerRole
+    relations: Dict[str, GroupWorkerRole]
 
 
 class RemoveGroupWorkerRoleReq(BaseAPIModel):
@@ -807,7 +834,7 @@ class RemoveGroupWorkerRoleReq(BaseAPIModel):
 
 
 class UpdateUserGroupRoleReq(BaseAPIModel):
-    relations: Dict[str, str]  # TODO: UserGroupRole
+    relations: Dict[str, UserGroupRole]
 
 
 class RemoveUserGroupRoleReq(BaseAPIModel):

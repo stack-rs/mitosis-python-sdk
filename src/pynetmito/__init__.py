@@ -107,8 +107,3 @@ __all__ = [
     "ShutdownReq",
     "RedisConnectionInfo",
 ]
-
-
-c = MitoHttpClient("http://127.0.0.1:5000")
-c.connect(user="mitosis_admin", password="mitosis_admin", retain=True)
-c.user_auth()
