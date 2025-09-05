@@ -6,10 +6,10 @@ readme = "README.md"
 authors = [{ name = "BobAnkh", email = "bobankhshen@gmail.com" }]
 requires-python = ">=3.10"
 dependencies = [
-    "httpx>=0.28.1",
-    "platformdirs>=4.4.0",
-    "pydantic>=2.11.7",
-    "python-dateutil>=2.9.0.post0",
+  "httpx>=0.28.1",
+  "platformdirs>=4.4.0",
+  "pydantic>=2.11.7",
+  "python-dateutil>=2.9.0.post0",
 ]
 license = { text = "Apache-2.0" }
 keywords = [
@@ -53,7 +53,7 @@ Homepage = "https://github.com/stack-rs/mitosis"
 Source = "https://github.com/stack-rs/mitosis"
 
 [tool.hatch.build.targets.sdist]
-include = ["/httpx", "/README.md"]
+include = ["/src/pynetmito", "/README.md"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pynetmito"]

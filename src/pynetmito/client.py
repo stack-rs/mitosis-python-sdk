@@ -22,6 +22,29 @@ from pynetmito.schemas import (
     UploadAttachmentResp,
     AttachmentMetadata,
     ArtifactContentType,
+    CreateUserReq,
+    UserChangePasswordReq,
+    UserChangePasswordResp,
+    AdminChangePasswordReq,
+    CreateGroupReq,
+    ChangeGroupStorageQuotaReq,
+    GroupStorageQuotaResp,
+    WorkerQueryResp,
+    WorkersQueryReq,
+    WorkersQueryResp,
+    GroupQueryInfo,
+    GroupsQueryResp,
+    AttachmentsQueryReq,
+    AttachmentsQueryResp,
+    UpdateTaskLabelsReq,
+    ChangeTaskReq,
+    ReplaceWorkerTagsReq,
+    UpdateGroupWorkerRoleReq,
+    RemoveGroupWorkerRoleReq,
+    UpdateUserGroupRoleReq,
+    RemoveUserGroupRoleReq,
+    ShutdownReq,
+    RedisConnectionInfo,
 )
 
 
@@ -56,7 +79,7 @@ class MitoHttpClient:
     def __del__(self):
         self.http_client.close()
 
-    def _get_url(self, path: str) -> str:
+    def _get_url(self, path: str, query: str | None = None) -> str:
         host = "127.0.0.1" if self.url.host is None else self.url.host
         return str(
             AnyHttpUrl.build(
@@ -64,6 +87,7 @@ class MitoHttpClient:
                 host=host,
                 port=self.url.port,
                 path=path,
+                query=query,
             )
         )
 
@@ -397,4 +421,344 @@ class MitoHttpClient:
             self.logger.error(resp.text)
             raise Exception(
                 f"Failed to get attachment meta for group {group_name} and key {key}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def get_redis_connection_info(self) -> RedisConnectionInfo:
+        url = self._get_url("redis")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.get(url, headers=headers)
+        if resp.status_code == 200:
+            r = RedisConnectionInfo.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get Redis connection info, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def user_change_password(
+        self, username: str, req: UserChangePasswordReq
+    ) -> UserChangePasswordResp:
+        url = self._get_url(f"users/{username}/password")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = UserChangePasswordResp.model_validate(resp.json())
+            self.credential = r.token
+            if self.credential_path.exists() and self.username is not None:
+                self.credential_path.parent.mkdir(parents=True, exist_ok=True)
+                self.modify_or_append_credential(
+                    self.credential_path, username, self.credential
+                )
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to change password for user {username}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_change_password(self, username: str, req: AdminChangePasswordReq):
+        url = self._get_url(f"admin/users/{username}/password")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to change password for user {username} (admin), status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_create_user(self, req: CreateUserReq):
+        url = self._get_url("admin/users")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to create user, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_delete_user(self, username: str):
+        url = self._get_url(f"admin/users/{username}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to delete user {username}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_cancel_worker_by_uuid(self, uuid: UUID4, force: bool = False):
+        if force:
+            url = self._get_url(f"admin/workers/{str(uuid)}", query="op=force")
+        else:
+            url = self._get_url(f"admin/workers/{str(uuid)}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to cancel worker {str(uuid)} (admin), status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def user_create_group(self, req: CreateGroupReq):
+        url = self._get_url("groups")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to create group, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def delete_artifact(
+        self, uuid: UUID4, content_type: ArtifactContentType, admin: bool = False
+    ):
+        if admin:
+            url = self._get_url(
+                f"admin/tasks/{str(uuid)}/artifacts/{content_type.value}"
+            )
+        else:
+            url = self._get_url(f"tasks/{str(uuid)}/artifacts/{content_type.value}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to delete artifact for task {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def delete_attachment(self, group_name: str, key: str, admin: bool = False):
+        if admin:
+            url = self._get_url(f"admin/groups/{group_name}/attachments/{key}")
+        else:
+            url = self._get_url(f"groups/{group_name}/attachments/{key}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to delete attachment for group {group_name} and key {key}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_update_group_storage_quota(
+        self, group_name: str, req: ChangeGroupStorageQuotaReq
+    ) -> GroupStorageQuotaResp:
+        url = self._get_url(f"admin/groups/{group_name}/storage-quota")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = GroupStorageQuotaResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to update storage quota for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def query_attachments_by_filter(
+        self, group_name: str, req: AttachmentsQueryReq
+    ) -> AttachmentsQueryResp:
+        url = self._get_url(f"groups/{group_name}/attachments/query")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = AttachmentsQueryResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to query attachments for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def get_worker_by_uuid(self, uuid: UUID4) -> WorkerQueryResp:
+        url = self._get_url(f"workers/{str(uuid)}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.get(url, headers=headers)
+        if resp.status_code == 200:
+            r = WorkerQueryResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get worker {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def query_workers_by_filter(self, req: WorkersQueryReq) -> WorkersQueryResp:
+        url = self._get_url("workers/query")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = WorkersQueryResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to query workers, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def get_group_by_name(self, group_name: str) -> GroupQueryInfo:
+        url = self._get_url(f"groups/{group_name}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.get(url, headers=headers)
+        if resp.status_code == 200:
+            r = GroupQueryInfo.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def get_user_groups_roles(self) -> GroupsQueryResp:
+        url = self._get_url("users/groups")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.get(url, headers=headers)
+        if resp.status_code == 200:
+            r = GroupsQueryResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get user groups roles, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def cancel_worker_by_uuid(self, uuid: UUID4, force: bool = False):
+        if force:
+            url = self._get_url(f"workers/{str(uuid)}", query="op=force")
+        else:
+            url = self._get_url(f"workers/{str(uuid)}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to cancel worker {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def replace_worker_tags(self, uuid: UUID4, req: ReplaceWorkerTagsReq):
+        url = self._get_url(f"workers/{str(uuid)}/tags")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to replace worker tags for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def update_group_worker_roles(self, uuid: UUID4, req: UpdateGroupWorkerRoleReq):
+        url = self._get_url(f"workers/{str(uuid)}/groups")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to update group worker roles for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def remove_group_worker_roles(self, uuid: UUID4, req: RemoveGroupWorkerRoleReq):
+        url = self._get_url(f"workers/{str(uuid)}/groups")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.request(
+            "DELETE", url=url, headers=headers, json=req.to_dict()
+        )
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to remove group worker roles for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def cancel_task_by_uuid(self, uuid: UUID4):
+        url = self._get_url(f"tasks/{str(uuid)}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to cancel task {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def update_task_labels(self, uuid: UUID4, req: UpdateTaskLabelsReq):
+        url = self._get_url(f"tasks/{str(uuid)}/labels")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to update task labels for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def change_task(self, uuid: UUID4, req: ChangeTaskReq):
+        url = self._get_url(f"tasks/{str(uuid)}")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to change task {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def update_user_group_roles(self, group_name: str, req: UpdateUserGroupRoleReq):
+        url = self._get_url(f"groups/{group_name}/users")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to update user group roles for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def remove_user_group_roles(self, group_name: str, req: RemoveUserGroupRoleReq):
+        url = self._get_url(f"groups/{group_name}/users")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.request(
+            "DELETE", url=url, headers=headers, json=req.to_dict()
+        )
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to remove user group roles for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_shutdown_coordinator(self, req: ShutdownReq):
+        url = self._get_url("admin/shutdown")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to shutdown coordinator, status code: {resp.status_code}, error: {resp.text}"
             )

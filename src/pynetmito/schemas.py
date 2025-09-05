@@ -293,7 +293,7 @@ class RemoteResourceDownload(BaseAPIModel):
     local_path: Path
 
     @model_serializer
-    def ser_model(self, **kwargs) -> Dict[str, Any]:
+    def ser_model(self) -> Dict[str, Any]:
         data = {
             "remote_file": self.remote_file.ser_model(),
             "local_path": str(self.local_path),
@@ -370,20 +370,20 @@ class TaskQueryInfo(BaseAPIModel):
 
     @field_validator("created_at", mode="before")
     @classmethod
-    def deserialize_created_at(cls, created_at: str, _info):
+    def deserialize_created_at(cls, created_at: str):
         return parse_rust_time_dateutil(created_at)
 
     @field_validator("updated_at", mode="before")
     @classmethod
-    def deserialize_updated_at(cls, updated_at: str, _info):
+    def deserialize_updated_at(cls, updated_at: str):
         return parse_rust_time_dateutil(updated_at)
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: datetime, _info):
+    def serialize_created_at(self, created_at: datetime):
         return serialize_to_rust_time(created_at)
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: datetime, _info):
+    def serialize_updated_at(self, updated_at: datetime):
         return serialize_to_rust_time(updated_at)
 
 
@@ -409,20 +409,20 @@ class ParsedTaskQueryInfo(BaseAPIModel):
 
     @field_validator("created_at", mode="before")
     @classmethod
-    def deserialize_created_at(cls, created_at: str, _info):
+    def deserialize_created_at(cls, created_at: str):
         return parse_rust_time_dateutil(created_at)
 
     @field_validator("updated_at", mode="before")
     @classmethod
-    def deserialize_updated_at(cls, updated_at: str, _info):
+    def deserialize_updated_at(cls, updated_at: str):
         return parse_rust_time_dateutil(updated_at)
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: datetime, _info):
+    def serialize_created_at(self, created_at: datetime):
         return serialize_to_rust_time(created_at)
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: datetime, _info):
+    def serialize_updated_at(self, updated_at: datetime):
         return serialize_to_rust_time(updated_at)
 
 
@@ -445,20 +445,20 @@ class ArtifactQueryResp(BaseAPIModel):
 
     @field_validator("created_at", mode="before")
     @classmethod
-    def deserialize_created_at(cls, created_at: str, _info):
+    def deserialize_created_at(cls, created_at: str):
         return parse_rust_time_dateutil(created_at)
 
     @field_validator("updated_at", mode="before")
     @classmethod
-    def deserialize_updated_at(cls, updated_at: str, _info):
+    def deserialize_updated_at(cls, updated_at: str):
         return parse_rust_time_dateutil(updated_at)
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: datetime, _info):
+    def serialize_created_at(self, created_at: datetime):
         return serialize_to_rust_time(created_at)
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: datetime, _info):
+    def serialize_updated_at(self, updated_at: datetime):
         return serialize_to_rust_time(updated_at)
 
 
@@ -476,30 +476,30 @@ class SubmitTaskReq(BaseAPIModel):
     task_spec: TaskSpec
 
     @field_serializer("tags")
-    def serialize_tags(self, tags: Set[str], _info):
+    def serialize_tags(self, tags: Set[str]):
         return list(tags)
 
     @field_validator("tags", mode="before")
     @classmethod
-    def deserialize_tags(cls, tags: list[str], _info):
+    def deserialize_tags(cls, tags: list[str]):
         return set(tags)
 
     @field_serializer("labels")
-    def serialize_labels(self, labels: Set[str], _info):
+    def serialize_labels(self, labels: Set[str]):
         return list(labels)
 
     @field_validator("labels", mode="before")
     @classmethod
-    def deserialize_labels(cls, labels: list[str], _info):
+    def deserialize_labels(cls, labels: list[str]):
         return set(labels)
 
     @field_serializer("timeout")
-    def serialize_timeout(self, timeout: timedelta, _info):
+    def serialize_timeout(self, timeout: timedelta):
         return serialize_to_human_timespan(timeout)
 
     @field_validator("timeout", mode="before")
     @classmethod
-    def deserialize_timeout(cls, timeout: str, _info):
+    def deserialize_timeout(cls, timeout: str):
         return parse_human_timespan(timeout)
 
 
@@ -539,18 +539,293 @@ class AttachmentMetadata(BaseAPIModel):
 
     @field_validator("created_at", mode="before")
     @classmethod
-    def deserialize_created_at(cls, created_at: str, _info):
+    def deserialize_created_at(cls, created_at: str):
         return parse_rust_time_dateutil(created_at)
 
     @field_validator("updated_at", mode="before")
     @classmethod
-    def deserialize_updated_at(cls, updated_at: str, _info):
+    def deserialize_updated_at(cls, updated_at: str):
         return parse_rust_time_dateutil(updated_at)
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: datetime, _info):
+    def serialize_created_at(self, created_at: datetime):
         return serialize_to_rust_time(created_at)
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: datetime, _info):
+    def serialize_updated_at(self, updated_at: datetime):
         return serialize_to_rust_time(updated_at)
+
+
+class CreateUserReq(BaseAPIModel):
+    username: str
+    md5_password: conlist(NonNegativeInt, min_length=16, max_length=16)
+    admin: bool = Field(default=False)
+
+
+class UserChangePasswordReq(BaseAPIModel):
+    old_md5_password: conlist(NonNegativeInt, min_length=16, max_length=16)
+    new_md5_password: conlist(NonNegativeInt, min_length=16, max_length=16)
+
+
+class UserChangePasswordResp(BaseAPIModel):
+    token: str
+
+
+class AdminChangePasswordReq(BaseAPIModel):
+    new_md5_password: conlist(NonNegativeInt, min_length=16, max_length=16)
+
+
+class CreateGroupReq(BaseAPIModel):
+    group_name: str
+
+
+class ChangeGroupStorageQuotaReq(BaseAPIModel):
+    storage_quota: str
+
+
+class GroupStorageQuotaResp(BaseAPIModel):
+    storage_quota: int
+
+
+class WorkerQueryInfo(BaseAPIModel):
+    worker_id: UUID4
+    creator_username: str
+    tags: list[str]
+    created_at: datetime
+    updated_at: datetime
+    state: str  # TODO: WorkerState enum
+    last_heartbeat: datetime
+    assigned_task_id: Optional[UUID4] = Field(default=None)
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_validator("last_heartbeat", mode="before")
+    @classmethod
+    def deserialize_last_heartbeat(cls, last_heartbeat: str):
+        return parse_rust_time_dateutil(last_heartbeat)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime):
+        return serialize_to_rust_time(updated_at)
+
+    @field_serializer("last_heartbeat")
+    def serialize_last_heartbeat(self, last_heartbeat: datetime):
+        return serialize_to_rust_time(last_heartbeat)
+
+
+class WorkerQueryResp(BaseAPIModel):
+    info: WorkerQueryInfo
+    groups: Dict[str, str]  # TODO: GroupWorkerRole
+
+
+class WorkersQueryReq(BaseAPIModel):
+    group_name: Optional[str] = Field(default=None)
+    role: Optional[Set[str]] = Field(default=None)  # TODO: GroupWorkerRole
+    tags: Optional[Set[str]] = Field(default=None)
+    creator_username: Optional[str] = Field(default=None)
+    count: bool = Field(default=False)
+
+    @field_serializer("role")
+    def serialize_role(self, role: Optional[Set[str]]):
+        return list(role) if role else None
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def deserialize_role(cls, role: Optional[list[str]]):
+        return set(role) if role else None
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+
+class WorkersQueryResp(BaseAPIModel):
+    count: NonNegativeInt
+    workers: list[WorkerQueryInfo]
+    group_name: str
+
+
+class GroupQueryInfo(BaseAPIModel):
+    group_name: str
+    creator_username: str
+    created_at: datetime
+    updated_at: datetime
+    state: str  # TODO: GroupState
+    task_count: int
+    storage_quota: int
+    storage_used: int
+    worker_count: int
+    users_in_group: Optional[Dict[str, str]] = Field(
+        default=None
+    )  # TODO: UserGroupRole
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime):
+        return serialize_to_rust_time(updated_at)
+
+
+class GroupsQueryResp(BaseAPIModel):
+    groups: Dict[str, str]  # TODO: UserGroupRole
+
+
+class AttachmentQueryInfo(BaseAPIModel):
+    key: str
+    content_type: AttachmentContentType
+    size: int
+    created_at: datetime
+    updated_at: datetime
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def deserialize_created_at(cls, created_at: str):
+        return parse_rust_time_dateutil(created_at)
+
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def deserialize_updated_at(cls, updated_at: str):
+        return parse_rust_time_dateutil(updated_at)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime):
+        return serialize_to_rust_time(created_at)
+
+    @field_serializer("updated_at")
+    def serialize_updated_at(self, updated_at: datetime):
+        return serialize_to_rust_time(updated_at)
+
+
+class AttachmentsQueryReq(BaseAPIModel):
+    key_prefix: Optional[str] = Field(default=None)
+    limit: Optional[NonNegativeInt] = Field(default=None)
+    offset: Optional[NonNegativeInt] = Field(default=None)
+    count: bool = Field(default=False)
+
+
+class AttachmentsQueryResp(BaseAPIModel):
+    count: NonNegativeInt
+    attachments: list[AttachmentQueryInfo]
+    group_name: str
+
+
+class UpdateTaskLabelsReq(BaseAPIModel):
+    labels: Set[str]
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Set[str]):
+        return list(labels)
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: list[str]):
+        return set(labels)
+
+
+class ChangeTaskReq(BaseAPIModel):
+    tags: Optional[Set[str]] = Field(default=None)
+    timeout: Optional[timedelta] = Field(default=None)
+    priority: Optional[int] = Field(default=None)
+    task_spec: Optional[TaskSpec] = Field(default=None)
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+    @field_serializer("timeout")
+    def serialize_timeout(self, timeout: Optional[timedelta]):
+        return serialize_to_human_timespan(timeout) if timeout else None
+
+    @field_validator("timeout", mode="before")
+    @classmethod
+    def deserialize_timeout(cls, timeout: Optional[str]):
+        return parse_human_timespan(timeout) if timeout else None
+
+
+class ReplaceWorkerTagsReq(BaseAPIModel):
+    tags: Set[str]
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Set[str]):
+        return list(tags)
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: list[str]):
+        return set(tags)
+
+
+class UpdateGroupWorkerRoleReq(BaseAPIModel):
+    relations: Dict[str, str]  # TODO: GroupWorkerRole
+
+
+class RemoveGroupWorkerRoleReq(BaseAPIModel):
+    groups: Set[str]
+
+    @field_serializer("groups")
+    def serialize_groups(self, groups: Set[str]):
+        return list(groups)
+
+    @field_validator("groups", mode="before")
+    @classmethod
+    def deserialize_groups(cls, groups: list[str]):
+        return set(groups)
+
+
+class UpdateUserGroupRoleReq(BaseAPIModel):
+    relations: Dict[str, str]  # TODO: UserGroupRole
+
+
+class RemoveUserGroupRoleReq(BaseAPIModel):
+    users: Set[str]
+
+    @field_serializer("users")
+    def serialize_users(self, users: Set[str]):
+        return list(users)
+
+    @field_validator("users", mode="before")
+    @classmethod
+    def deserialize_users(cls, users: list[str]):
+        return set(users)
+
+
+class ShutdownReq(BaseAPIModel):
+    secret: str
+
+
+class RedisConnectionInfo(BaseAPIModel):
+    url: Optional[str] = Field(default=None)
