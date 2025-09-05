@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0](https://github.com/stack-rs/mitosis/compare/v0.0.3..v0.1.0) - 2025-09-05
+
+### Features
+
+- *(schema)* Replace str field with enum class - ([f673bc7](https://github.com/stack-rs/mitosis-python-sdk/commit/f673bc70cc6f85734510964cd6920a3f7ff8035a))
+
 ## [0.0.3](https://github.com/stack-rs/mitosis/compare/v0.0.2..v0.0.3) - 2025-09-05
 
 ### Features
