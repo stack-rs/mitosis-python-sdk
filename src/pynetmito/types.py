@@ -10,7 +10,7 @@ class BaseAPIModel(BaseModel):
     )
 
     def to_dict(self) -> Dict[str, Any]:
-        return self.model_dump(exclude_none=True)
+        return self.model_dump(exclude_none=True, mode="json")
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
