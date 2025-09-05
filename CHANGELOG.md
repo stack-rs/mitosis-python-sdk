@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2](https://github.com/stack-rs/mitosis/compare/v0.1.1..v0.1.2) - 2025-09-05
+
+### Bug Fixes
+
+- *(types)* Resolve json serialization errors - ([05ba93a](https://github.com/stack-rs/mitosis-python-sdk/commit/05ba93ab7384c8b0a3827c95b6ef426572b3fb94))
+
 ## [0.1.1](https://github.com/stack-rs/mitosis/compare/v0.1.0..v0.1.1) - 2025-09-05
 
 ### Bug Fixes
