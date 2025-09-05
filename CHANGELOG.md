@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3](https://github.com/stack-rs/mitosis/compare/v0.1.2..v0.1.3) - 2025-09-05
+
+### Documentation
+
+- *(readme)* Add usage guidance - ([9676e41](https://github.com/stack-rs/mitosis-python-sdk/commit/9676e4118e56e0af3fee29c474c1d04d16655b57))
+
 ## [0.1.2](https://github.com/stack-rs/mitosis/compare/v0.1.1..v0.1.2) - 2025-09-05
 
 ### Bug Fixes
