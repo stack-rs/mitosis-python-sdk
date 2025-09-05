@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.3](https://github.com/stack-rs/mitosis/compare/v0.0.2..v0.0.3) - 2025-09-05
+
+### Features
+
+- *(schema)* Add more SDK interfaces - ([49ca526](https://github.com/stack-rs/mitosis-python-sdk/commit/49ca5267b25d79f75421f15cf9bfc1097d456ad3))
+
 ## [0.0.2](https://github.com/stack-rs/mitosis/compare/v0.0.1..v0.0.2) - 2025-09-04
 
 ### Features
