@@ -39,6 +39,7 @@ from pynetmito.schemas import (
     UpdateTaskLabelsReq,
     ChangeTaskReq,
     ReplaceWorkerTagsReq,
+    ReplaceWorkerLabelsReq,
     UpdateGroupWorkerRoleReq,
     RemoveGroupWorkerRoleReq,
     UpdateUserGroupRoleReq,
@@ -661,6 +662,18 @@ class MitoHttpClient:
             self.logger.error(resp.text)
             raise Exception(
                 f"Failed to replace worker tags for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def replace_worker_labels(self, uuid: UUID4, req: ReplaceWorkerLabelsReq):
+        url = self._get_url(f"workers/{str(uuid)}/labels")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.put(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            return
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to replace worker labels for {str(uuid)}, status code: {resp.status_code}, error: {resp.text}"
             )
 
     def update_group_worker_roles(self, uuid: UUID4, req: UpdateGroupWorkerRoleReq):

@@ -852,6 +852,19 @@ class ReplaceWorkerTagsReq(BaseAPIModel):
         return set(tags)
 
 
+class ReplaceWorkerLabelsReq(BaseAPIModel):
+    labels: Set[str]
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Set[str]):
+        return list(labels)
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: list[str]):
+        return set(labels)
+
+
 class UpdateGroupWorkerRoleReq(BaseAPIModel):
     relations: Dict[str, GroupWorkerRole]
 
