@@ -678,8 +678,8 @@ class MitoHttpClient:
     def remove_group_worker_roles(self, uuid: UUID4, req: RemoveGroupWorkerRoleReq):
         url = self._get_url(f"workers/{str(uuid)}/groups")
         headers = {"Authorization": f"Bearer {self.credential}"}
-        resp = self.http_client.request(
-            "DELETE", url=url, headers=headers, json=req.to_dict()
+        resp = self.http_client.delete(
+            url, headers=headers, params={"groups": list(req.groups)}
         )
         if resp.status_code == 200:
             return
@@ -740,8 +740,8 @@ class MitoHttpClient:
     def remove_user_group_roles(self, group_name: str, req: RemoveUserGroupRoleReq):
         url = self._get_url(f"groups/{group_name}/users")
         headers = {"Authorization": f"Bearer {self.credential}"}
-        resp = self.http_client.request(
-            "DELETE", url=url, headers=headers, json=req.to_dict()
+        resp = self.http_client.delete(
+            url, headers=headers, params={"users": list(req.users)}
         )
         if resp.status_code == 200:
             return
