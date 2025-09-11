@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/stack-rs/mitosis/compare/v0.1.3..v0.2.0) - 2025-09-11
+
+### Features
+
+- *(api)* Support new worker update labels api - ([5bfbe27](https://github.com/stack-rs/mitosis-python-sdk/commit/5bfbe270f9e003fd2f63445b55eecffb3fbcb2b0))
+- *(api)* Update delete operations to latest netmito - ([a74aaa3](https://github.com/stack-rs/mitosis-python-sdk/commit/a74aaa37c17ba00a3ab76eb840d201747c869126))
+
 ## [0.1.3](https://github.com/stack-rs/mitosis/compare/v0.1.2..v0.1.3) - 2025-09-05
 
 ### Documentation
