@@ -259,7 +259,6 @@ class MitoHttpClient:
         headers = {"Authorization": f"Bearer {self.credential}"}
         resp = self.http_client.post(url, headers=headers, json=req.model_dump())
         if resp.status_code == 200:
-            print(resp.text)
             r = SubmitTaskResp.model_validate(resp.json())
             return r
         else:
