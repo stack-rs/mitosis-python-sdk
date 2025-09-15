@@ -241,6 +241,7 @@ class TaskResultMessage(str, Enum):
     RESOURCE_FORBIDDEN = "ResourceForbidden"
     WATCH_TIMEOUT = "WatchTimeout"
     USER_CANCELLATION = "UserCancellation"
+    SUBMIT_NEW_TASK_FAILED = "SubmitNewTaskFailed"
 
 
 class RemoteResourceArtifact(BaseAPIModel):
@@ -432,6 +433,8 @@ class TaskQueryInfo(BaseAPIModel):
     priority: int
     spec: dict
     result: Optional[dict] = Field(default=None)
+    upstream_task_uuid: Optional[UUID4] = Field(default=None)
+    downstream_task_uuid: Optional[UUID4] = Field(default=None)
 
     @field_validator("created_at", mode="before")
     @classmethod
@@ -471,6 +474,8 @@ class ParsedTaskQueryInfo(BaseAPIModel):
     priority: int
     spec: TaskSpec
     result: Optional[TaskResultSpec] = Field(default=None)
+    upstream_task_uuid: Optional[UUID4] = Field(default=None)
+    downstream_task_uuid: Optional[UUID4] = Field(default=None)
 
     @field_validator("created_at", mode="before")
     @classmethod
