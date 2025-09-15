@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2](https://github.com/stack-rs/mitosis/compare/v0.2.1..v0.2.2) - 2025-09-15
+
+### Features
+
+- *(schema)* Add new fields to task query result - ([3801f0e](https://github.com/stack-rs/mitosis-python-sdk/commit/3801f0e3807ae3a370b68ff61645d98e4d50676f))
+
 ## [0.2.1](https://github.com/stack-rs/mitosis/compare/v0.2.0..v0.2.1) - 2025-09-11
 
 ### Bug Fixes
