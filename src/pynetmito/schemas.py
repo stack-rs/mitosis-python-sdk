@@ -657,6 +657,14 @@ class GroupStorageQuotaResp(BaseAPIModel):
     storage_quota: int
 
 
+class ChangeUserGroupQuota(BaseAPIModel):
+    group_quota: str
+
+
+class UserGroupQuotaResp(BaseAPIModel):
+    group_quota: int
+
+
 class WorkerQueryInfo(BaseAPIModel):
     worker_id: UUID4
     creator_username: str

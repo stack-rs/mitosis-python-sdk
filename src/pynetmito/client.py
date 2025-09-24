@@ -29,6 +29,8 @@ from pynetmito.schemas import (
     CreateGroupReq,
     ChangeGroupStorageQuotaReq,
     GroupStorageQuotaResp,
+    ChangeUserGroupQuota,
+    UserGroupQuotaResp,
     WorkerQueryResp,
     WorkersQueryReq,
     WorkersQueryResp,
@@ -567,6 +569,21 @@ class MitoHttpClient:
             self.logger.error(resp.text)
             raise Exception(
                 f"Failed to update storage quota for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def admin_update_user_group_quota(
+        self, username: str, req: ChangeUserGroupQuota
+    ) -> UserGroupQuotaResp:
+        url = self._get_url(f"admin/users/{username}/group-quota")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = UserGroupQuotaResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to update group quota for user {username}, status code: {resp.status_code}, error: {resp.text}"
             )
 
     def query_attachments_by_filter(
