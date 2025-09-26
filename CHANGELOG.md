@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3](https://github.com/stack-rs/mitosis/compare/v0.2.2..v0.2.3) - 2025-09-26
+
+### Features
+
+- *(api)* Support the change user group-quota API - ([b898e17](https://github.com/stack-rs/mitosis-python-sdk/commit/b898e17fd63606edc3c3573f6d463dc6a354432a))
+
 ## [0.2.2](https://github.com/stack-rs/mitosis/compare/v0.2.1..v0.2.2) - 2025-09-15
 
 ### Features

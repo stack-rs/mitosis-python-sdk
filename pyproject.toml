@@ -1,6 +1,6 @@
 [project]
 name = "pynetmito"
-version = "0.2.2"
+version = "0.2.3"
 description = "Python Client SDK for mitosis"
 readme = "README.md"
 authors = [{ name = "BobAnkh", email = "bobankhshen@gmail.com" }]
