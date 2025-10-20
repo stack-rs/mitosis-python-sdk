@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4](https://github.com/stack-rs/mitosis/compare/v0.2.3..v0.2.4) - 2025-10-20
+
+### Features
+
+- *(schema)* Support labels in workers query interface - ([84c1621](https://github.com/stack-rs/mitosis-python-sdk/commit/84c1621d4b79bd005b5008e0c575f8658fd8b23b))
+
 ## [0.2.3](https://github.com/stack-rs/mitosis/compare/v0.2.2..v0.2.3) - 2025-09-26
 
 ### Features
