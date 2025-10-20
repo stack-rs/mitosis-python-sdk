@@ -53,7 +53,7 @@ from pynetmito.schemas import (
 
 def get_logger():
     formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     logger = logging.getLogger("pynetmito")

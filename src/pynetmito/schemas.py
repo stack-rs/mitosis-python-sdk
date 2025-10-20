@@ -669,6 +669,7 @@ class WorkerQueryInfo(BaseAPIModel):
     worker_id: UUID4
     creator_username: str
     tags: list[str]
+    labels: list[str]
     created_at: datetime
     updated_at: datetime
     state: WorkerState
@@ -712,6 +713,7 @@ class WorkersQueryReq(BaseAPIModel):
     group_name: Optional[str] = Field(default=None)
     role: Optional[Set[GroupWorkerRole]] = Field(default=None)
     tags: Optional[Set[str]] = Field(default=None)
+    labels: Optional[Set[str]] = Field(default=None)
     creator_username: Optional[str] = Field(default=None)
     count: bool = Field(default=False)
 
@@ -732,6 +734,15 @@ class WorkersQueryReq(BaseAPIModel):
     @classmethod
     def deserialize_tags(cls, tags: Optional[list[str]]):
         return set(tags) if tags else None
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Optional[Set[str]]):
+        return list(labels) if labels else None
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: Optional[list[str]]):
+        return set(labels) if labels else None
 
 
 class WorkersQueryResp(BaseAPIModel):
