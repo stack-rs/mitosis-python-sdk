@@ -221,6 +221,11 @@ class WorkerState(str, Enum):
     GRACEFUL_SHUTDOWN = "GracefulShutdown"
 
 
+class WorkerShutdownOp(str, Enum):
+    GRACEFUL = "Graceful"
+    FORCE = "Force"
+
+
 class UserGroupRole(str, Enum):
     READ = "Read"
     WRITE = "Write"
@@ -502,6 +507,62 @@ class TasksQueryResp(BaseAPIModel):
     group_name: str
 
 
+class TasksCancelByFilterReq(BaseAPIModel):
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+        use_enum_values=True,
+    )
+    creator_usernames: Optional[Set[str]] = Field(default=None)
+    group_name: Optional[str] = Field(default=None)
+    tags: Optional[Set[str]] = Field(default=None)
+    labels: Optional[Set[str]] = Field(default=None)
+    states: Optional[Set[TaskState]] = Field(default=None)
+    exit_status: Optional[str] = Field(default=None)
+    priority: Optional[str] = Field(default=None)
+
+    @field_serializer("creator_usernames")
+    def serialize_creator_usernames(self, creator_usernames: Optional[Set[str]]):
+        return list(creator_usernames) if creator_usernames else None
+
+    @field_validator("creator_usernames", mode="before")
+    @classmethod
+    def deserialize_creator_usernames(cls, creator_usernames: Optional[list[str]]):
+        return set(creator_usernames) if creator_usernames else None
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Optional[Set[str]]):
+        return list(labels) if labels else None
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: Optional[list[str]]):
+        return set(labels) if labels else None
+
+    @field_serializer("states")
+    def serialize_states(self, states: Optional[Set[TaskState]]):
+        return list(states) if states else None
+
+    @field_validator("states", mode="before")
+    @classmethod
+    def deserialize_states(cls, states: Optional[list[TaskState]]):
+        return set(states) if states else None
+
+
+class TasksCancelByFilterResp(BaseAPIModel):
+    cancelled_count: NonNegativeInt
+    group_name: str
+
+
 class ArtifactQueryResp(BaseAPIModel):
     model_config = ConfigDict(
         extra="allow",
@@ -748,6 +809,52 @@ class WorkersQueryReq(BaseAPIModel):
 class WorkersQueryResp(BaseAPIModel):
     count: NonNegativeInt
     workers: list[WorkerQueryInfo]
+    group_name: str
+
+
+class WorkersShutdownByFilterReq(BaseAPIModel):
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+        use_enum_values=True,
+    )
+    group_name: Optional[str] = Field(default=None)
+    role: Optional[Set[GroupWorkerRole]] = Field(default=None)
+    tags: Optional[Set[str]] = Field(default=None)
+    labels: Optional[Set[str]] = Field(default=None)
+    creator_username: Optional[str] = Field(default=None)
+    op: WorkerShutdownOp
+
+    @field_serializer("role")
+    def serialize_role(self, role: Optional[Set[GroupWorkerRole]]):
+        return list(role) if role else None
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def deserialize_role(cls, role: Optional[list[GroupWorkerRole]]):
+        return set(role) if role else None
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Optional[Set[str]]):
+        return list(labels) if labels else None
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: Optional[list[str]]):
+        return set(labels) if labels else None
+
+
+class WorkersShutdownByFilterResp(BaseAPIModel):
+    shutdown_count: NonNegativeInt
     group_name: str
 
 
