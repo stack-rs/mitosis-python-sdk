@@ -920,7 +920,7 @@ class AttachmentQueryInfo(BaseAPIModel):
 
 
 class AttachmentsQueryReq(BaseAPIModel):
-    key_prefix: Optional[str] = Field(default=None)
+    key: Optional[str] = Field(default=None)
     limit: Optional[NonNegativeInt] = Field(default=None)
     offset: Optional[NonNegativeInt] = Field(default=None)
     count: bool = Field(default=False)
