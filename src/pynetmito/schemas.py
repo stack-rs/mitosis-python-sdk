@@ -1036,3 +1036,107 @@ class ShutdownReq(BaseAPIModel):
 
 class RedisConnectionInfo(BaseAPIModel):
     url: Optional[str] = Field(default=None)
+
+
+class ArtifactsDownloadByFilterReq(BaseAPIModel):
+    """Request to batch download artifacts by filter criteria."""
+
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+        use_enum_values=True,
+    )
+    creator_usernames: Optional[Set[str]] = Field(default=None)
+    group_name: Optional[str] = Field(default=None)
+    tags: Optional[Set[str]] = Field(default=None)
+    labels: Optional[Set[str]] = Field(default=None)
+    states: Optional[Set[TaskState]] = Field(default=None)
+    exit_status: Optional[str] = Field(default=None)
+    priority: Optional[str] = Field(default=None)
+    content_type: ArtifactContentType
+
+    @field_serializer("creator_usernames")
+    def serialize_creator_usernames(self, creator_usernames: Optional[Set[str]]):
+        return list(creator_usernames) if creator_usernames else None
+
+    @field_validator("creator_usernames", mode="before")
+    @classmethod
+    def deserialize_creator_usernames(cls, creator_usernames: Optional[list[str]]):
+        return set(creator_usernames) if creator_usernames else None
+
+    @field_serializer("tags")
+    def serialize_tags(self, tags: Optional[Set[str]]):
+        return list(tags) if tags else None
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def deserialize_tags(cls, tags: Optional[list[str]]):
+        return set(tags) if tags else None
+
+    @field_serializer("labels")
+    def serialize_labels(self, labels: Optional[Set[str]]):
+        return list(labels) if labels else None
+
+    @field_validator("labels", mode="before")
+    @classmethod
+    def deserialize_labels(cls, labels: Optional[list[str]]):
+        return set(labels) if labels else None
+
+    @field_serializer("states")
+    def serialize_states(self, states: Optional[Set[TaskState]]):
+        return list(states) if states else None
+
+    @field_validator("states", mode="before")
+    @classmethod
+    def deserialize_states(cls, states: Optional[list[TaskState]]):
+        return set(states) if states else None
+
+
+class ArtifactsDownloadByUuidsReq(BaseAPIModel):
+    """Request to batch download artifacts by task UUIDs."""
+
+    uuids: list[UUID4]
+    content_type: ArtifactContentType
+
+
+class ArtifactDownloadItem(BaseAPIModel):
+    """Single artifact download item in batch response."""
+
+    uuid: UUID4
+    url: str
+    size: int
+
+
+class ArtifactsDownloadListResp(BaseAPIModel):
+    """Response for batch artifact download operations."""
+
+    downloads: list[ArtifactDownloadItem]
+
+
+class AttachmentsDownloadByFilterReq(BaseAPIModel):
+    """Request to batch download attachments by filter criteria."""
+
+    key: Optional[str] = Field(default=None)
+    limit: Optional[NonNegativeInt] = Field(default=None)
+    offset: Optional[NonNegativeInt] = Field(default=None)
+
+
+class AttachmentsDownloadByKeysReq(BaseAPIModel):
+    """Request to batch download attachments by keys."""
+
+    keys: list[str]
+
+
+class AttachmentDownloadItem(BaseAPIModel):
+    """Single attachment download item in batch response."""
+
+    key: str
+    url: str
+    size: int
+
+
+class AttachmentsDownloadListResp(BaseAPIModel):
+    """Response for batch attachment download operations."""
+
+    downloads: list[AttachmentDownloadItem]
+    group_name: str

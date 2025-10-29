@@ -52,6 +52,12 @@ from pynetmito.schemas import (
     RemoveUserGroupRoleReq,
     ShutdownReq,
     RedisConnectionInfo,
+    ArtifactsDownloadByFilterReq,
+    ArtifactsDownloadByUuidsReq,
+    ArtifactsDownloadListResp,
+    AttachmentsDownloadByFilterReq,
+    AttachmentsDownloadByKeysReq,
+    AttachmentsDownloadListResp,
 )
 
 
@@ -409,6 +415,85 @@ class MitoHttpClient:
         if local_path is None:
             local_path = Path(key)
         self.download_file(resp, local_path)
+
+    def concurrent_download_files(
+        self,
+        downloads: list[tuple[RemoteResourceDownloadResp, Path]],
+        concurrent: int = 1,
+    ):
+        """Download multiple files concurrently with a specified concurrency limit."""
+        from concurrent.futures import ThreadPoolExecutor
+
+        def download_single(item: tuple[RemoteResourceDownloadResp, Path]):
+            resp, local_path = item
+            self.download_file(resp, local_path)
+
+        with ThreadPoolExecutor(max_workers=concurrent) as executor:
+            list(executor.map(download_single, downloads))
+
+    def batch_download_artifacts_by_filter(
+        self, req: ArtifactsDownloadByFilterReq
+    ) -> ArtifactsDownloadListResp:
+        """Batch download artifacts by filter criteria."""
+        url = self._get_url("tasks/download/artifacts/filter")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = ArtifactsDownloadListResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get batch artifact download URLs by filter, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_download_artifacts_by_list(
+        self, req: ArtifactsDownloadByUuidsReq
+    ) -> ArtifactsDownloadListResp:
+        """Batch download artifacts by task UUIDs."""
+        url = self._get_url("tasks/download/artifacts/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = ArtifactsDownloadListResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get batch artifact download URLs by list, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_download_attachments_by_filter(
+        self, group_name: str, req: AttachmentsDownloadByFilterReq
+    ) -> AttachmentsDownloadListResp:
+        """Batch download attachments by filter criteria."""
+        url = self._get_url(f"groups/{group_name}/download/attachments/filter")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = AttachmentsDownloadListResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get batch attachment download URLs by filter for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_download_attachments_by_list(
+        self, group_name: str, req: AttachmentsDownloadByKeysReq
+    ) -> AttachmentsDownloadListResp:
+        """Batch download attachments by keys."""
+        url = self._get_url(f"groups/{group_name}/download/attachments/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = AttachmentsDownloadListResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to get batch attachment download URLs by list for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
 
     def get_attachment(
         self, key: str, group_name: Optional[str] = None
