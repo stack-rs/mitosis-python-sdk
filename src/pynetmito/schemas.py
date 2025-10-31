@@ -563,6 +563,19 @@ class TasksCancelByFilterResp(BaseAPIModel):
     group_name: str
 
 
+class TasksCancelByUuidsReq(BaseAPIModel):
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+    )
+    uuids: list[UUID4]
+
+
+class TasksCancelByUuidsResp(BaseAPIModel):
+    cancelled_count: NonNegativeInt
+    failed_uuids: list[UUID4]
+
+
 class ArtifactQueryResp(BaseAPIModel):
     model_config = ConfigDict(
         extra="allow",
@@ -856,6 +869,21 @@ class WorkersShutdownByFilterReq(BaseAPIModel):
 class WorkersShutdownByFilterResp(BaseAPIModel):
     shutdown_count: NonNegativeInt
     group_name: str
+
+
+class WorkersShutdownByUuidsReq(BaseAPIModel):
+    model_config = ConfigDict(
+        extra="allow",
+        validate_assignment=True,
+        use_enum_values=True,
+    )
+    uuids: list[UUID4]
+    op: WorkerShutdownOp
+
+
+class WorkersShutdownByUuidsResp(BaseAPIModel):
+    shutdown_count: NonNegativeInt
+    failed_uuids: list[UUID4]
 
 
 class GroupQueryInfo(BaseAPIModel):

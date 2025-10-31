@@ -15,6 +15,8 @@ from pynetmito.schemas import (
     TasksQueryResp,
     TasksCancelByFilterReq,
     TasksCancelByFilterResp,
+    TasksCancelByUuidsReq,
+    TasksCancelByUuidsResp,
     SubmitTaskReq,
     SubmitTaskResp,
     UploadArtifactReq,
@@ -38,6 +40,8 @@ from pynetmito.schemas import (
     WorkersQueryResp,
     WorkersShutdownByFilterReq,
     WorkersShutdownByFilterResp,
+    WorkersShutdownByUuidsReq,
+    WorkersShutdownByUuidsResp,
     GroupQueryInfo,
     GroupsQueryResp,
     AttachmentsQueryReq,
@@ -435,7 +439,7 @@ class MitoHttpClient:
         self, req: ArtifactsDownloadByFilterReq
     ) -> ArtifactsDownloadListResp:
         """Batch download artifacts by filter criteria."""
-        url = self._get_url("tasks/download/artifacts/filter")
+        url = self._get_url("tasks/download/artifacts")
         headers = {"Authorization": f"Bearer {self.credential}"}
         resp = self.http_client.post(url, headers=headers, json=req.to_dict())
         if resp.status_code == 200:
@@ -467,7 +471,7 @@ class MitoHttpClient:
         self, group_name: str, req: AttachmentsDownloadByFilterReq
     ) -> AttachmentsDownloadListResp:
         """Batch download attachments by filter criteria."""
-        url = self._get_url(f"groups/{group_name}/download/attachments/filter")
+        url = self._get_url(f"groups/{group_name}/download/attachments")
         headers = {"Authorization": f"Bearer {self.credential}"}
         resp = self.http_client.post(url, headers=headers, json=req.to_dict())
         if resp.status_code == 200:
@@ -772,6 +776,22 @@ class MitoHttpClient:
                 f"Failed to shutdown workers by filter, status code: {resp.status_code}, error: {resp.text}"
             )
 
+    def shutdown_workers_by_uuids(
+        self, req: WorkersShutdownByUuidsReq
+    ) -> WorkersShutdownByUuidsResp:
+        """Shutdown workers by UUIDs."""
+        url = self._get_url("workers/shutdown/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = WorkersShutdownByUuidsResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to shutdown workers by UUIDs, status code: {resp.status_code}, error: {resp.text}"
+            )
+
     def replace_worker_tags(self, uuid: UUID4, req: ReplaceWorkerTagsReq):
         url = self._get_url(f"workers/{str(uuid)}/tags")
         headers = {"Authorization": f"Bearer {self.credential}"}
@@ -847,6 +867,22 @@ class MitoHttpClient:
             self.logger.error(resp.text)
             raise Exception(
                 f"Failed to cancel tasks by filter, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def cancel_tasks_by_uuids(
+        self, req: TasksCancelByUuidsReq
+    ) -> TasksCancelByUuidsResp:
+        """Cancel tasks by UUIDs."""
+        url = self._get_url("tasks/cancel/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = TasksCancelByUuidsResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to cancel tasks by UUIDs, status code: {resp.status_code}, error: {resp.text}"
             )
 
     def update_task_labels(self, uuid: UUID4, req: UpdateTaskLabelsReq):
