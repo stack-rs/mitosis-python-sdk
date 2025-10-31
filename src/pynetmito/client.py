@@ -62,6 +62,16 @@ from pynetmito.schemas import (
     AttachmentsDownloadByFilterReq,
     AttachmentsDownloadByKeysReq,
     AttachmentsDownloadListResp,
+    ArtifactsDeleteByFilterReq,
+    ArtifactsDeleteByFilterResp,
+    ArtifactsDeleteByUuidsReq,
+    ArtifactsDeleteByUuidsResp,
+    AttachmentsDeleteByFilterReq,
+    AttachmentsDeleteByFilterResp,
+    AttachmentsDeleteByKeysReq,
+    AttachmentsDeleteByKeysResp,
+    TasksSubmitReq,
+    TasksSubmitResp,
 )
 
 
@@ -945,4 +955,82 @@ class MitoHttpClient:
             self.logger.error(resp.text)
             raise Exception(
                 f"Failed to shutdown coordinator, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_delete_artifacts_by_filter(
+        self, req: ArtifactsDeleteByFilterReq
+    ) -> ArtifactsDeleteByFilterResp:
+        """Batch delete artifacts by filter criteria."""
+        url = self._get_url("tasks/delete/artifacts")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = ArtifactsDeleteByFilterResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to batch delete artifacts by filter, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_delete_artifacts_by_list(
+        self, req: ArtifactsDeleteByUuidsReq
+    ) -> ArtifactsDeleteByUuidsResp:
+        """Batch delete artifacts by task UUIDs."""
+        url = self._get_url("tasks/delete/artifacts/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = ArtifactsDeleteByUuidsResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to batch delete artifacts by list, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_delete_attachments_by_filter(
+        self, group_name: str, req: AttachmentsDeleteByFilterReq
+    ) -> AttachmentsDeleteByFilterResp:
+        """Batch delete attachments by filter criteria."""
+        url = self._get_url(f"groups/{group_name}/delete/attachments")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = AttachmentsDeleteByFilterResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to batch delete attachments by filter for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_delete_attachments_by_list(
+        self, group_name: str, req: AttachmentsDeleteByKeysReq
+    ) -> AttachmentsDeleteByKeysResp:
+        """Batch delete attachments by keys."""
+        url = self._get_url(f"groups/{group_name}/delete/attachments/list")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = AttachmentsDeleteByKeysResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to batch delete attachments by list for group {group_name}, status code: {resp.status_code}, error: {resp.text}"
+            )
+
+    def batch_submit_tasks(self, req: TasksSubmitReq) -> TasksSubmitResp:
+        """Batch submit tasks."""
+        url = self._get_url("tasks/submit")
+        headers = {"Authorization": f"Bearer {self.credential}"}
+        resp = self.http_client.post(url, headers=headers, json=req.to_dict())
+        if resp.status_code == 200:
+            r = TasksSubmitResp.model_validate(resp.json())
+            return r
+        else:
+            self.logger.error(resp.text)
+            raise Exception(
+                f"Failed to batch submit tasks, status code: {resp.status_code}, error: {resp.text}"
             )
