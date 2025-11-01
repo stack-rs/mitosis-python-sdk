@@ -378,6 +378,7 @@ class TasksQueryReq(BaseAPIModel):
     states: Optional[Set[TaskState]] = Field(default=None)
     exit_status: Optional[str] = Field(default=None)
     priority: Optional[str] = Field(default=None)
+    reporter_uuid: Optional[UUID4] = Field(default=None)
     limit: Optional[NonNegativeInt] = Field(default=None)
     offset: Optional[NonNegativeInt] = Field(default=None)
     count: bool = Field(default=False)
@@ -440,6 +441,7 @@ class TaskQueryInfo(BaseAPIModel):
     result: Optional[dict] = Field(default=None)
     upstream_task_uuid: Optional[UUID4] = Field(default=None)
     downstream_task_uuid: Optional[UUID4] = Field(default=None)
+    reporter_uuid: Optional[UUID4] = Field(default=None)
 
     @field_validator("created_at", mode="before")
     @classmethod
@@ -481,6 +483,7 @@ class ParsedTaskQueryInfo(BaseAPIModel):
     result: Optional[TaskResultSpec] = Field(default=None)
     upstream_task_uuid: Optional[UUID4] = Field(default=None)
     downstream_task_uuid: Optional[UUID4] = Field(default=None)
+    reporter_uuid: Optional[UUID4] = Field(default=None)
 
     @field_validator("created_at", mode="before")
     @classmethod
@@ -1081,6 +1084,7 @@ class ArtifactsDownloadByFilterReq(BaseAPIModel):
     states: Optional[Set[TaskState]] = Field(default=None)
     exit_status: Optional[str] = Field(default=None)
     priority: Optional[str] = Field(default=None)
+    reporter_uuid: Optional[UUID4] = Field(default=None)
     content_type: ArtifactContentType
 
     @field_serializer("creator_usernames")
@@ -1185,6 +1189,7 @@ class ArtifactsDeleteByFilterReq(BaseAPIModel):
     states: Optional[Set[TaskState]] = Field(default=None)
     exit_status: Optional[str] = Field(default=None)
     priority: Optional[str] = Field(default=None)
+    reporter_uuid: Optional[UUID4] = Field(default=None)
     content_type: ArtifactContentType
 
     @field_serializer("creator_usernames")
