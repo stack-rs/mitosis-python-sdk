@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5](https://github.com/stack-rs/mitosis/compare/v0.2.4..v0.2.5) - 2025-11-02
+
+### Features
+
+- *(api)* Support reporter_uuid in task relevant interfaces - ([0ba07c2](https://github.com/stack-rs/mitosis-python-sdk/commit/0ba07c22e99321da369c033c306c501cbc346539))
+- *(api)* Support batch operation for artifacts, attachments and tasks - ([ab47dd6](https://github.com/stack-rs/mitosis-python-sdk/commit/ab47dd6072791ca719573731ff32ed593e8f5d3f))
+- *(api)* Support batch cancellation of tasks and workers by uuid - ([989bbac](https://github.com/stack-rs/mitosis-python-sdk/commit/989bbac2c17124cc6967b79b53146d9ff75a5343))
+- *(api)* Support batch download of artifacts and attachments - ([1e3fc0a](https://github.com/stack-rs/mitosis-python-sdk/commit/1e3fc0acd917f90abcc54dc3e7200fea3816cc15))
+- *(api)* Support batch cancellation of tasks and workers - ([252cf84](https://github.com/stack-rs/mitosis-python-sdk/commit/252cf841e7ab7d23faa8aee6ec8d1a18eae4b105))
+
+### Refactor
+
+- *(schema)* [**breaking**] Rename key_prefix to key in query - ([da71099](https://github.com/stack-rs/mitosis-python-sdk/commit/da710998e74d2a0b22b179cb9bc6cf0c18f6a2ff))
+
+### Documentation
+
+- *(readme)* Update support version table - ([ca72cc9](https://github.com/stack-rs/mitosis-python-sdk/commit/ca72cc97f7d049adc8ae554c852c843269c1a0b7))
+
+### Miscellaneous Tasks
+
+- Add bump script - ([fe7b9a8](https://github.com/stack-rs/mitosis-python-sdk/commit/fe7b9a8ec090eacead686e231f89bdbf44e38760))
+
 ## [0.2.4](https://github.com/stack-rs/mitosis/compare/v0.2.3..v0.2.4) - 2025-10-20
 
 ### Features
