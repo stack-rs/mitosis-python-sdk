@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6](https://github.com/stack-rs/mitosis/compare/v0.2.5..v0.2.6) - 2025-11-18
+
+### Features
+
+- *(client)* Add a retryable client wrapper - ([d0b9021](https://github.com/stack-rs/mitosis-python-sdk/commit/d0b9021ed5adc54208592256fff74fb4bdb06cd2))
+
 ## [0.2.5](https://github.com/stack-rs/mitosis/compare/v0.2.4..v0.2.5) - 2025-11-02
 
 ### Features
@@ -107,3 +113,6 @@ All notable changes to this project will be documented in this file.
 
 - Add publish utilities - ([d9a7ca0](https://github.com/stack-rs/mitosis-python-sdk/commit/d9a7ca03108b6ad5c0676bc508040968f580ab02))
 
+## New Contributors
+
+- @BobAnkh made their first contribution
