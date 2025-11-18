@@ -1034,3 +1034,159 @@ class MitoHttpClient:
             raise Exception(
                 f"Failed to batch submit tasks, status code: {resp.status_code}, error: {resp.text}"
             )
+
+
+class PersistentMitoHttpClient:
+    """
+    A wrapper around MitoHttpClient that automatically handles re-authentication on 401 errors.
+
+    This client stores the username and password when connect() is called, and automatically
+    retries authentication once if a 401 Unauthorized error is encountered in any API call.
+
+    Example:
+        >>> client = PersistentMitoHttpClient("http://localhost:8080")
+        >>> client.connect(user="myuser", password="mypassword")
+        'myuser'
+        >>> # Now all API calls will automatically re-authenticate on 401 errors
+        >>> tasks = client.query_tasks_by_filter(TasksQueryReq(...))
+        >>> # If the token expires and a 401 is returned, the client will:
+        >>> # 1. Automatically call connect() again with stored credentials
+        >>> # 2. Retry the original API call
+        >>> # 3. If it still fails, raise the error
+    """
+
+    def __init__(self, coordinator_addr: str):
+        """Initialize the persistent client with a coordinator address."""
+        self._inner_client = MitoHttpClient(coordinator_addr)
+        self._stored_username: Optional[str] = None
+        self._stored_password: Optional[str] = None
+        self._stored_credential_path: Optional[Path] = None
+        self._stored_retain: bool = False
+        self.logger = self._inner_client.logger
+
+    def __del__(self):
+        """Clean up the inner client."""
+        if hasattr(self, "_inner_client"):
+            del self._inner_client
+
+    def connect(
+        self,
+        credential_path: Optional[Path] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        retain: bool = False,
+    ) -> str:
+        """
+        Connect to the server and store credentials for automatic re-authentication.
+
+        Args:
+            credential_path: Path to credential file
+            user: Username
+            password: Password
+            retain: Whether to retain the session
+
+        Returns:
+            The authenticated username
+        """
+        # Store credentials for future re-authentication
+        if user is not None and password is not None:
+            self._stored_username = user
+            self._stored_password = password
+            self._stored_credential_path = credential_path
+            self._stored_retain = retain
+
+        # Call the inner client's connect method
+        username = self._inner_client.connect(
+            credential_path=credential_path, user=user, password=password, retain=retain
+        )
+        self._stored_username = username
+        return username
+
+    def _should_retry_with_reauth(self, error: Exception) -> bool:
+        """
+        Check if an error indicates a 401 Unauthorized that should trigger re-authentication.
+
+        Args:
+            error: The exception to check
+
+        Returns:
+            True if the error is a 401 and we should retry with re-authentication
+        """
+        error_msg = str(error)
+        # Check if error message contains status code 401
+        return "status code: 401" in error_msg or "401" in error_msg
+
+    def _retry_with_reauth(self, method_name: str, *args, **kwargs):
+        """
+        Execute a method with automatic re-authentication on 401 errors.
+
+        Args:
+            method_name: Name of the method to call on the inner client
+            *args: Positional arguments for the method
+            **kwargs: Keyword arguments for the method
+
+        Returns:
+            The result of the method call
+
+        Raises:
+            Exception: If the method fails even after re-authentication attempt
+        """
+        # Get the method from the inner client
+        method = getattr(self._inner_client, method_name)
+
+        try:
+            # Try the original call
+            return method(*args, **kwargs)
+        except Exception as e:
+            # Check if this is a 401 error
+            if self._should_retry_with_reauth(e):
+                # Check if we have stored credentials to retry with
+                if self._stored_username is None or self._stored_password is None:
+                    # No stored credentials, can't retry
+                    raise
+
+                # Try to re-authenticate
+                try:
+                    self._inner_client.connect(
+                        credential_path=self._stored_credential_path,
+                        user=self._stored_username,
+                        password=self._stored_password,
+                        retain=self._stored_retain,
+                    )
+                except Exception:
+                    # Re-authentication failed, raise the original error
+                    raise e
+
+                # Re-authentication succeeded, retry the original call
+                try:
+                    return method(*args, **kwargs)
+                except Exception as retry_error:
+                    # Retry failed, raise the error
+                    raise retry_error
+            else:
+                # Not a 401 error, raise it immediately
+                raise
+
+    def __getattr__(self, name: str):
+        """
+        Dynamically wrap all methods from the inner client with retry logic.
+
+        Args:
+            name: The attribute name
+
+        Returns:
+            A wrapped version of the method if it's callable, otherwise the attribute itself
+        """
+        # Get the attribute from the inner client
+        attr = getattr(self._inner_client, name)
+
+        # If it's a method and not a special/private method, wrap it with retry logic
+        if callable(attr) and not name.startswith("_") and name != "connect":
+
+            def wrapped_method(*args, **kwargs):
+                return self._retry_with_reauth(name, *args, **kwargs)
+
+            return wrapped_method
+        else:
+            # For non-callable attributes or private methods, return as-is
+            return attr

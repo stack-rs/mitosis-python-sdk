@@ -1,5 +1,5 @@
 from .types import BaseAPIModel
-from .client import MitoHttpClient
+from .client import MitoHttpClient, PersistentMitoHttpClient
 from .schemas import (
     UserLoginArgs,
     UserLoginReq,
@@ -73,6 +73,7 @@ from .schemas import (
 __all__ = [
     "BaseAPIModel",
     "MitoHttpClient",
+    "PersistentMitoHttpClient",
     "UserLoginArgs",
     "UserLoginReq",
     "UserLoginResp",
