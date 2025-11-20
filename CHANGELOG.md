@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7](https://github.com/stack-rs/mitosis/compare/v0.2.6..v0.2.7) - 2025-11-20
+
+### Features
+
+- *(schema)* Support new uploading response types - ([7fdacc6](https://github.com/stack-rs/mitosis-python-sdk/commit/7fdacc67cebd814aedcfe8e24a1775b01e9f24c1))
+
 ## [0.2.6](https://github.com/stack-rs/mitosis/compare/v0.2.5..v0.2.6) - 2025-11-18
 
 ### Features
