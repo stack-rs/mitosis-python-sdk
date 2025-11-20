@@ -666,6 +666,7 @@ class UploadArtifactReq(BaseAPIModel):
 
 
 class UploadArtifactResp(BaseAPIModel):
+    exist: bool = Field(default=False)
     url: str
 
 
@@ -675,6 +676,7 @@ class UploadAttachmentReq(BaseAPIModel):
 
 
 class UploadAttachmentResp(BaseAPIModel):
+    exist: bool = Field(default=False)
     url: str
 
 
