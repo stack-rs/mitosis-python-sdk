@@ -325,13 +325,14 @@ class MitoHttpClient:
 
     def upload_artifact(
         self, local_path: Path, uuid: UUID4, content_type: ArtifactContentType
-    ):
+    ) -> bool:
         if local_path.is_dir():
             raise Exception("local_path should be a file, not a directory")
         file_size = local_path.stat().st_size
         req = UploadArtifactReq(content_type=content_type, content_length=file_size)
         resp = self.get_upload_artifact_resp(uuid, req)
         self.upload_file(resp.url, file_size, local_path)
+        return resp.exist
 
     def get_upload_attachment_resp(
         self, group_name: str, req: UploadAttachmentReq
@@ -353,7 +354,7 @@ class MitoHttpClient:
         local_path: Path,
         group_name: Optional[str] = None,
         key: Optional[str] = None,
-    ):
+    ) -> bool:
         if local_path.is_dir():
             raise Exception("local_path should be a file, not a directory")
         if group_name is None:
@@ -367,6 +368,7 @@ class MitoHttpClient:
             req = UploadAttachmentReq(key=local_path.name, content_length=file_size)
         resp = self.get_upload_attachment_resp(group_name, req)
         self.upload_file(resp.url, file_size, local_path)
+        return resp.exist
 
     def get_artifact_download_resp(
         self, uuid: UUID4, content_type: ArtifactContentType
